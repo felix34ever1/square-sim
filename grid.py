@@ -49,25 +49,42 @@ class Grid():
             for j in range(0,len(self.grid_array[i])):
                 object = self.grid_array[i][j]
                 if type(object)==tile.Tile:
-                    new_rect = pygame.rect.Rect(i*32,j*32,32,32)
+                    
                     #new_rect.topleft = (i*32,j*32)
                     #new_rect.size = (32,32)
-                    if object.value == 0:
-                        green_hue = int(255*object.food)
-                        self.WINDOW.fill((0,green_hue,0),new_rect)
-                    elif object.value == 1:
+                
+                    new_rect = pygame.rect.Rect(i*32,j*32,32,32)
+                    green_hue = int(255*object.food)
+                    self.WINDOW.fill((0,green_hue,0),new_rect)
+                    if object.value == 1:
+                        new_rect = pygame.rect.Rect(i*32+2,j*32+2,28,28)
                         creature_color = tuple(object.creature.color)
                         self.WINDOW.fill(creature_color,new_rect)
-    
+                    elif object.value == 0 and object.is_blocker: # A blocker
+                        new_rect = pygame.rect.Rect(i*32,j*32,32,32)
+                        self.WINDOW.fill((100,100,100),new_rect)
 
     
+    def populate(self,creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore):
+        grid_x = random.randint(0,self.width-1)
+        grid_y = random.randint(0,self.height-1)
+        if self.grid_array[grid_x][grid_y].creature == None:
+            near_tiles = self.check_neighbours(grid_x,grid_y)
+            for object in near_tiles:
+                if object.creature == None:
+                    self.grid_array[grid_x][grid_y].creature = creature.Creature(creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore)
+                    self.grid_array[grid_x][grid_y].value = 1
+                    
+                    object.creature = creature.Creature(creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore)
+                    object.value = 1
+
     def update_tiles(self):
     # Update dead tiles
         for i in range(0,len(self.grid_array)):
             for j in range(0,len(self.grid_array[i])):
                 object = self.grid_array[i][j]
                 if type(object)==tile.Tile:
-                    if object.value == 0:
+                    if object.value == 0 and not object.is_blocker:
                         creature_list = []
                         total = 0 # Amount of cells surrounding it that are value 1
                         if i>0: # Left

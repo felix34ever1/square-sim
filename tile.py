@@ -7,3 +7,4 @@ class Tile:
         self.next_value = 0
         self.creature:creature.Creature = None
         self.food = 1.0
+        self.is_blocker = False
