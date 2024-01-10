@@ -2,6 +2,7 @@ import tile
 import pygame
 import random
 import copy
+import creature
 class Grid():
 
     def __init__(self,width:int,height:int,WINDOW:pygame.surface.Surface) -> None:
@@ -34,6 +35,14 @@ class Grid():
         if grid_x<len(self.grid_array)-1 and grid_y<len(self.grid_array[grid_x])-1: #bottomright
             neighbour_list.append(self.grid_array[grid_x+1][grid_y+1])
         return(neighbour_list)
+
+    def check_creature_neighbours(self,grid_x,grid_y)->list[tile.Tile]:
+        tile_list = self.check_neighbours(grid_x,grid_y)
+        creature_list = []
+        for object in tile_list:
+            if object.creature != None:
+                creature_list.append(object)
+        return creature_list
 
     def display(self):
         for i in range(0,len(self.grid_array)):
@@ -95,9 +104,11 @@ class Grid():
                             if self.grid_array[i+1][j+1].creature != None:
                                 creature_list.append(self.grid_array[i+1][j+1].creature)
                                                 
-                        if total > 2 and total < 4: # Dead cell becomes alive
+                        if total > 1: # Dead cell becomes alive
                             inheritor_creature = creature_list[random.randint(0,len(creature_list)-1)]
-                            if random.random() < inheritor_creature.metabolism*2:
+                            if inheritor_creature.is_carnivore:
+                                inheritor_creature.food_store -= inheritor_creature.metabolism / 5
+                            if random.random()*total < inheritor_creature.metabolism*2:
                                 object.creature = copy.deepcopy(inheritor_creature)
                                 if random.random() < 0.05:
                                     object.creature.mutate()
@@ -109,7 +120,7 @@ class Grid():
                         if object.food >1.0:
                             object.food =1.0
     
-        # Update living tiles
+    # Update living tiles
         for i in range(0,len(self.grid_array)):
             for j in range(0,len(self.grid_array[i])):
                 object = self.grid_array[i][j]
@@ -135,14 +146,37 @@ class Grid():
                             total+=self.grid_array[i+1][j+1].value
                                                 
                         object.next_value = 1
-                        object.food-=object.creature.metabolism
-                        object.food-=0.025*total
-                        if object.creature.is_producer:
-                            clear_tiles = 9 - total 
-                            food_produced = clear_tiles*object.creature.metabolism/8
-                            for neighbour in self.check_neighbours(i,j):
-                                if type(neighbour) == tile.Tile:
-                                    neighbour.food+=food_produced
+                        if not object.creature.is_carnivore: # Non carnivore upkeep
+                            object.food-=object.creature.metabolism
+                            object.food-=0.025*total
+                            object.food-=0.5*object.creature.evade_chance
+                        else: # Carnivore/predator code
+                            object.creature.food_store-=object.creature.metabolism
+                            if object.creature.food_store<=0:
+                                object.value = 0
+                                object.next_value = 0
+                                object.creature = None
+                            else:
+                                nearby_creatures = self.check_creature_neighbours(i,j)
+                                if len(nearby_creatures) != 0:
+                                    target_creature_tile = nearby_creatures[random.randint(0,len(nearby_creatures)-1)]
+                                    if not target_creature_tile.creature.is_carnivore: # Carnivores for simplification cannot eat other carnivores
+                                        if random.random() > target_creature_tile.creature.evade_chance:
+                                            target_creature_tile.value = 0
+                                            target_creature_tile.next_value = 0
+                                            target_creature_tile.creature = None
+                                            object.creature.food_store+=1
+
+                        if object.creature != None: # Has to check incase a predator dies, as otherwise it'll check none against a producer
+                            if object.creature.is_producer: # Producer code
+                                clear_tiles = 9 - total 
+                                food_produced = clear_tiles*object.creature.metabolism/8
+                                for neighbour in self.check_neighbours(i,j):
+                                    if type(neighbour) == tile.Tile:
+                                        neighbour.food+=food_produced
+                                        if neighbour.food > 1:
+                                            neighbour.food = 1 
+                                    object.food+=food_produced
                         if object.food<0:
                             object.next_value = 0
                             object.creature = None
