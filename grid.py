@@ -9,12 +9,35 @@ class Grid():
         self.width = width
         self.height = height
         self.WINDOW = WINDOW
+        self.climate_change = 0
         self.grid_array:list[list] = []
         for i in range(width):
             self.grid_array.append([])
             for j in range(height):
-                self.grid_array[i].append(tile.Tile(0))
-            
+                climate_coefficient = j*0.1
+                if climate_coefficient>1:
+                    climate_coefficient = 1
+                if climate_coefficient<0:
+                    climate_coefficient = 0
+                self.grid_array[i].append(tile.Tile(0,climate_coefficient))
+
+    def do_climate_change(self,increase_amount):
+        self.climate_change+=increase_amount
+        for i in range(len(self.grid_array)):
+            for j in range(len(self.grid_array[i])):
+                if j<=self.climate_change:
+                    self.grid_array[i][j].climate_coefficient=0.0
+                else:
+                    new_cc = (j-self.climate_change)*0.1
+                    if new_cc>1:
+                        new_cc = 1
+                    if new_cc<0:
+                        new_cc = 0
+                    self.grid_array[i][j].climate_coefficient=new_cc
+
+                
+
+
     def check_neighbours(self,grid_x:int,grid_y:int)->list[tile.Tile]:
         neighbour_list = []
         if grid_x>0: # Left
@@ -55,7 +78,8 @@ class Grid():
                 
                     new_rect = pygame.rect.Rect(i*32,j*32,32,32)
                     green_hue = int(255*object.food)
-                    self.WINDOW.fill((0,green_hue,0),new_rect)
+                    temperature_hue = int(255*(1 - object.climate_coefficient))
+                    self.WINDOW.fill((0,green_hue,temperature_hue),new_rect)
                     if object.value == 1:
                         new_rect = pygame.rect.Rect(i*32+2,j*32+2,28,28)
                         creature_color = tuple(object.creature.color)
@@ -163,6 +187,7 @@ class Grid():
                             total+=self.grid_array[i+1][j+1].value
                                                 
                         object.next_value = 1
+                        object.food-=1*(1-object.climate_coefficient)
                         if not object.creature.is_carnivore: # Non carnivore upkeep
                             object.food-=object.creature.metabolism
                             object.food-=0.025*total

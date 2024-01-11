@@ -2,16 +2,24 @@ import pygame
 import grid
 import tile
 import creature
+import random
 
 pygame.init
 
-grid_size = (30,20)
+grid_size = (40,25)
 
-WINDOW = pygame.display.set_mode((32*grid_size[0],32*grid_size[1]))
+WINDOW = pygame.display.set_mode((32*grid_size[0]+200,32*grid_size[1]))
 
 grid = grid.Grid(grid_size[0],grid_size[1],WINDOW)
 
+k = random.randint(1,4)
+n = random.randint(1,4)
 
+# HUD Images
+edit_on = pygame.image.load("edit_on.png")
+edit_off = pygame.image.load("edit_off.png")
+edit_rect = edit_on.get_rect()
+edit_rect.topleft = (32*grid_size[0]+84,32)
 
 
 playing = True
@@ -25,6 +33,7 @@ creature_is_carnivore = False
 placing_blocker = False
 simulation_ticks = 0
 repopulation_ticks = 0
+climate_ticks = 0 
 while playing:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -88,6 +97,7 @@ while playing:
             
 
     if editing:
+        WINDOW.blit(edit_on,edit_rect)
         if pygame.mouse.get_pressed()[0]:# Place creature
             position = pygame.mouse.get_pos()
             grid_pos = (position[0]//32,position[1]//32)
@@ -99,9 +109,10 @@ while playing:
                     current_tile.creature = None
                     current_tile.is_blocker = not current_tile.is_blocker
                 else: # Placing creature
-                    current_tile.value = 1
-                    current_tile.creature = creature.Creature(creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore)
-        if pygame.mouse.get_pressed()[2]:# Get creature metabolism
+                    if not current_tile.is_blocker:
+                        current_tile.value = 1
+                        current_tile.creature = creature.Creature(creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore)
+        if pygame.mouse.get_pressed()[2]:# Get creature stats
             position = pygame.mouse.get_pos()
             grid_pos = (position[0]//32,position[1]//32)
             current_tile = grid.grid_array[grid_pos[0]][grid_pos[1]]
@@ -109,15 +120,20 @@ while playing:
                 if current_tile.creature != None:
                     print(f"M:{current_tile.creature.metabolism}|E:{current_tile.creature.evade_chance}|Prod:{current_tile.creature.is_producer}|Carn:{current_tile.creature.is_carnivore}")
     if simulating:
+        WINDOW.blit(edit_off,edit_rect)
         ticks_passed = simulation_timer.tick()
         simulation_ticks+=ticks_passed
         repopulation_ticks+=ticks_passed
-        if simulation_ticks>20:
+        climate_ticks+=ticks_passed
+        if simulation_ticks>100:
             simulation_ticks = 0
             grid.update_tiles()
         if repopulation_ticks>10000:
             repopulation_ticks=0
-            grid.populate([255,255,255],10,False,False)
+            grid.populate([255,255,255],0.1,False,False)
+        if climate_ticks>5000:
+            grid.do_climate_change(1)
+            climate_ticks=0
 
         
         
