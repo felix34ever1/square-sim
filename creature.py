@@ -15,7 +15,7 @@ class Creature():
     def mutate(self):
         for i in range(3):
             color_choice = random.randint(0,2)
-            self.color[color_choice] += random.randint(-75,75)
+            self.color[color_choice] += random.randint(-150,150)
             if self.color[color_choice] >255:
                 self.color[color_choice] = 255
             elif self.color[color_choice]<0:

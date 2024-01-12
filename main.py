@@ -101,17 +101,20 @@ while playing:
         if pygame.mouse.get_pressed()[0]:# Place creature
             position = pygame.mouse.get_pos()
             grid_pos = (position[0]//32,position[1]//32)
-            current_tile = grid.grid_array[grid_pos[0]][grid_pos[1]]
-            if type(current_tile) == tile.Tile:
-                if placing_blocker: # Place blocker
-                    current_tile.value = 0
-                    current_tile.next_value = 0
-                    current_tile.creature = None
-                    current_tile.is_blocker = not current_tile.is_blocker
-                else: # Placing creature
-                    if not current_tile.is_blocker:
-                        current_tile.value = 1
-                        current_tile.creature = creature.Creature(creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore)
+            try:
+                current_tile = grid.grid_array[grid_pos[0]][grid_pos[1]]
+                if type(current_tile) == tile.Tile:
+                    if placing_blocker: # Place blocker
+                        current_tile.value = 0
+                        current_tile.next_value = 0
+                        current_tile.creature = None
+                        current_tile.is_blocker = not current_tile.is_blocker
+                    else: # Placing creature
+                        if not current_tile.is_blocker:
+                            current_tile.value = 1
+                            current_tile.creature = creature.Creature(creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore)
+            except:
+                print("clicked out of bounds")
         if pygame.mouse.get_pressed()[2]:# Get creature stats
             position = pygame.mouse.get_pos()
             grid_pos = (position[0]//32,position[1]//32)

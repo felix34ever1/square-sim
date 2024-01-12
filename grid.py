@@ -211,26 +211,29 @@ class Grid():
                         if not object.creature.is_carnivore and not object.creature.is_producer: # Check if the population migrates
                                 if random.random()<object.creature.movement_ability:
                                     self.move_creature(i,j)
-                        if not object.creature.is_carnivore: # Non carnivore upkeep
-                            object.food-=object.creature.metabolism
-                            object.food-=0.025*total
-                            object.food-=0.5*object.creature.evade_chance
-                        else: # Carnivore/predator code
-                            object.creature.food_store-=object.creature.metabolism
-                            if object.creature.food_store<=0:
-                                object.value = 0
-                                object.next_value = 0
-                                object.creature = None
-                            else:
-                                nearby_creatures = self.check_creature_neighbours(i,j)
-                                if len(nearby_creatures) != 0:
-                                    target_creature_tile = nearby_creatures[random.randint(0,len(nearby_creatures)-1)]
-                                    if not target_creature_tile.creature.is_carnivore: # Carnivores for simplification cannot eat other carnivores
-                                        if random.random() > target_creature_tile.creature.evade_chance:
-                                            target_creature_tile.value = 0
-                                            target_creature_tile.next_value = 0
-                                            target_creature_tile.creature = None
-                                            object.creature.food_store+=1
+                        if object.creature != None:
+                            if not object.creature.is_carnivore: # Non carnivore upkeep
+                                object.food-=object.creature.metabolism
+                                object.food-=0.025*total
+                                object.food-=0.5*object.creature.evade_chance
+                            else: # Carnivore/predator code
+                                object.creature.food_store-=object.creature.metabolism
+                                if object.creature.food_store<=0:
+                                    object.value = 0
+                                    object.next_value = 0
+                                    object.creature = None
+                                else:
+                                    nearby_creatures = self.check_creature_neighbours(i,j)
+                                    if len(nearby_creatures) != 0:
+                                        target_creature_tile = nearby_creatures[random.randint(0,len(nearby_creatures)-1)]
+                                        if not target_creature_tile.creature.is_carnivore and random.random() < object.creature.metabolism+0.2: 
+                                            # Carnivores for simplification cannot eat other carnivores,also carnivores hunt more based on their metabolism 
+                                            object.creature.food_store-=0.5*object.creature.metabolism
+                                            if random.random() > target_creature_tile.creature.evade_chance:
+                                                target_creature_tile.value = 0
+                                                target_creature_tile.next_value = 0
+                                                target_creature_tile.creature = None
+                                                object.creature.food_store+=1
 
                         if object.creature != None: # Has to check incase a predator dies, as otherwise it'll check if None type has attributes
                             if object.creature.is_producer: # Producer code
