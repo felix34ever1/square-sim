@@ -4,7 +4,7 @@ import tile
 import creature
 import random
 
-pygame.init
+pygame.init()
 
 grid_size = (30,20)
 
@@ -14,6 +14,18 @@ grid = grid.Grid(grid_size[0],grid_size[1],WINDOW)
 
 k = random.randint(1,4)
 n = random.randint(1,4)
+
+# Font
+default_font = pygame.font.Font("cnc.ttf",20)
+
+# Text
+
+WHITE = (255,255,255)
+metabolism_text = default_font.render(f"Me: ",False,WHITE)
+evade_text = default_font.render(f"Ev: ",False,WHITE)
+movement_text = default_font.render(f"Mov: ",False,WHITE)
+reasoning_text = default_font.render(f"Rea: ",False,WHITE)
+type_text = default_font.render(f"Prod: | Carn:",False,WHITE)
 
 # HUD Images
 edit_on = pygame.image.load("edit_on.png")
@@ -121,6 +133,12 @@ while playing:
             current_tile = grid.grid_array[grid_pos[0]][grid_pos[1]]
             if type(current_tile) == tile.Tile:
                 if current_tile.creature != None:
+                    selected = current_tile.creature
+                    metabolism_text = default_font.render(f"Me: {round(selected.metabolism,2)}",False,WHITE)
+                    evade_text = default_font.render(f"Ev: {round(selected.evade_chance,2)}",False,WHITE)
+                    movement_text = default_font.render(f"Mov: {round(selected.movement_ability,2)}",False,WHITE)
+                    reasoning_text = default_font.render(f"Rea: {round(selected.reasoning,2)}",False,WHITE)
+                    type_text = default_font.render(f"Prod:{selected.is_producer} |Carn:{selected.is_carnivore}",False,WHITE)
                     print(f"Me:{current_tile.creature.metabolism}|Ev:{current_tile.creature.evade_chance}|Mov:{current_tile.creature.movement_ability}|Rea{current_tile.creature.reasoning}\n|Prod:{current_tile.creature.is_producer}|Carn:{current_tile.creature.is_carnivore}")
     if simulating:
         WINDOW.blit(edit_off,edit_rect)
@@ -138,6 +156,11 @@ while playing:
         #    grid.do_climate_change(1)
         #    climate_ticks=0
 
+    WINDOW.blit(metabolism_text,(grid_size[0]*32+10, 400))
+    WINDOW.blit(evade_text,(grid_size[0]*32+10, 440))
+    WINDOW.blit(movement_text,(grid_size[0]*32+10, 480))
+    WINDOW.blit(reasoning_text,(grid_size[0]*32+10, 520))
+    WINDOW.blit(type_text,(grid_size[0]*32+10, 560))
         
         
 
