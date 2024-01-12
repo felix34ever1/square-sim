@@ -6,7 +6,7 @@ import random
 
 pygame.init
 
-grid_size = (40,25)
+grid_size = (30,20)
 
 WINDOW = pygame.display.set_mode((32*grid_size[0]+200,32*grid_size[1]))
 
@@ -118,7 +118,7 @@ while playing:
             current_tile = grid.grid_array[grid_pos[0]][grid_pos[1]]
             if type(current_tile) == tile.Tile:
                 if current_tile.creature != None:
-                    print(f"M:{current_tile.creature.metabolism}|E:{current_tile.creature.evade_chance}|Prod:{current_tile.creature.is_producer}|Carn:{current_tile.creature.is_carnivore}")
+                    print(f"Me:{current_tile.creature.metabolism}|Ev:{current_tile.creature.evade_chance}|Mov:{current_tile.creature.movement_ability}|Rea{current_tile.creature.reasoning}\n|Prod:{current_tile.creature.is_producer}|Carn:{current_tile.creature.is_carnivore}")
     if simulating:
         WINDOW.blit(edit_off,edit_rect)
         ticks_passed = simulation_timer.tick()
@@ -131,9 +131,9 @@ while playing:
         if repopulation_ticks>10000:
             repopulation_ticks=0
             grid.populate([255,255,255],0.1,False,False)
-        if climate_ticks>5000:
-            grid.do_climate_change(1)
-            climate_ticks=0
+        #if climate_ticks>5000:
+        #    grid.do_climate_change(1)
+        #    climate_ticks=0
 
         
         

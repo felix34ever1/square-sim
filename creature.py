@@ -9,6 +9,8 @@ class Creature():
         self.is_carnivore = is_carnivore
         self.evade_chance = 0.0
         self.food_store = 1.0
+        self.movement_ability = 0.0
+        self.reasoning = 0.0
 
     def mutate(self):
         for i in range(3):
@@ -20,6 +22,8 @@ class Creature():
                 self.color[color_choice] = 0
         self.metabolism = random.random()/2
         self.evade_chance = random.random()
+        self.movement_ability = random.random()
+        self.reasoning = random.random()
         if self.is_producer:
             if random.random() < 0.02:
                 self.is_producer = False
@@ -32,3 +36,4 @@ class Creature():
                 self.is_producer = True
             if chance > 0.01:
                 self.is_carnivore = True
+

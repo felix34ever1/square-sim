@@ -66,6 +66,14 @@ class Grid():
             if object.creature != None:
                 creature_list.append(object)
         return creature_list
+    
+    def check_empty_neighbours(self,grid_x,grid_y)->list[tile.Tile]:
+        tile_list = self.check_neighbours(grid_x,grid_y)
+        empty_tile_list = []
+        for object in tile_list:
+            if object.creature == None:
+                empty_tile_list.append(object)
+        return empty_tile_list
 
     def display(self):
         for i in range(0,len(self.grid_array)):
@@ -87,8 +95,20 @@ class Grid():
                     elif object.value == 0 and object.is_blocker: # A blocker
                         new_rect = pygame.rect.Rect(i*32,j*32,32,32)
                         self.WINDOW.fill((100,100,100),new_rect)
+   
+    def move_creature(self,grid_x,grid_y):
+        object:tile.Tile = self.grid_array[grid_x][grid_y]
+        viable_tiles = self.check_empty_neighbours(grid_x,grid_y)
+        if len(viable_tiles)!=0:
+            new_tile = viable_tiles[random.randint(0,len(viable_tiles)-1)]
+            if type(new_tile) == tile.Tile:
+                new_tile.creature = object.creature
+                object.creature = None
+                new_tile.value = 1
+                new_tile.next_value = 1
+                object.value = 0
+                object.next_value = 0
 
-    
     def populate(self,creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore):
         grid_x = random.randint(0,self.width-1)
         grid_y = random.randint(0,self.height-1)
@@ -188,6 +208,9 @@ class Grid():
                                                 
                         object.next_value = 1
                         object.food-=1*(1-object.climate_coefficient)
+                        if not object.creature.is_carnivore and not object.creature.is_producer: # Check if the population migrates
+                                if random.random()<object.creature.movement_ability:
+                                    self.move_creature(i,j)
                         if not object.creature.is_carnivore: # Non carnivore upkeep
                             object.food-=object.creature.metabolism
                             object.food-=0.025*total
@@ -209,7 +232,7 @@ class Grid():
                                             target_creature_tile.creature = None
                                             object.creature.food_store+=1
 
-                        if object.creature != None: # Has to check incase a predator dies, as otherwise it'll check none against a producer
+                        if object.creature != None: # Has to check incase a predator dies, as otherwise it'll check if None type has attributes
                             if object.creature.is_producer: # Producer code
                                 clear_tiles = 9 - total 
                                 food_produced = clear_tiles*object.creature.metabolism/8
@@ -219,14 +242,19 @@ class Grid():
                                         if neighbour.food > 1:
                                             neighbour.food = 1 
                                     object.food+=food_produced
+
+                            if not object.creature.is_carnivore and not object.creature.is_producer: # Check if the creature needs to move
+                                if object.food < object.creature.metabolism+0.025*total+0.5*object.creature.evade_chance:
+                                    if random.random()<object.creature.reasoning:
+                                        self.move_creature(i,j)
+
                         if object.food<0:
                             object.next_value = 0
                             object.creature = None
                             object.food = 0
                         object.food +=0.1
                         if object.food >1.0:
-                            object.food =1.0
-        
+                            object.food =1.0       
 
 
 
