@@ -21,6 +21,8 @@ default_font = pygame.font.Font("cnc.ttf",20)
 # Text
 
 WHITE = (255,255,255)
+creature_display_color = [0,0,0]
+creature_display_rect = pygame.rect.Rect(grid_size[0]*32+84, 300,32,32)
 metabolism_text = default_font.render(f"Me: ",False,WHITE)
 evade_text = default_font.render(f"Ev: ",False,WHITE)
 movement_text = default_font.render(f"Mov: ",False,WHITE)
@@ -134,12 +136,12 @@ while playing:
             if type(current_tile) == tile.Tile:
                 if current_tile.creature != None:
                     selected = current_tile.creature
+                    creature_display_color = selected.color
                     metabolism_text = default_font.render(f"Me: {round(selected.metabolism,2)}",False,WHITE)
                     evade_text = default_font.render(f"Ev: {round(selected.evade_chance,2)}",False,WHITE)
                     movement_text = default_font.render(f"Mov: {round(selected.movement_ability,2)}",False,WHITE)
                     reasoning_text = default_font.render(f"Rea: {round(selected.reasoning,2)}",False,WHITE)
                     type_text = default_font.render(f"Prod:{selected.is_producer} |Carn:{selected.is_carnivore}",False,WHITE)
-                    print(f"Me:{current_tile.creature.metabolism}|Ev:{current_tile.creature.evade_chance}|Mov:{current_tile.creature.movement_ability}|Rea{current_tile.creature.reasoning}\n|Prod:{current_tile.creature.is_producer}|Carn:{current_tile.creature.is_carnivore}")
     if simulating:
         WINDOW.blit(edit_off,edit_rect)
         ticks_passed = simulation_timer.tick()
@@ -156,6 +158,7 @@ while playing:
         #    grid.do_climate_change(1)
         #    climate_ticks=0
 
+    pygame.draw.rect(WINDOW,creature_display_color,creature_display_rect)
     WINDOW.blit(metabolism_text,(grid_size[0]*32+10, 400))
     WINDOW.blit(evade_text,(grid_size[0]*32+10, 440))
     WINDOW.blit(movement_text,(grid_size[0]*32+10, 480))
