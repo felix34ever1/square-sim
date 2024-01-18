@@ -175,6 +175,7 @@ class Grid():
                                 inheritor_creature.food_store -= inheritor_creature.metabolism / 5
                             if random.random()*total < inheritor_creature.metabolism*2:
                                 object.creature = copy.deepcopy(inheritor_creature)
+                                object.creature.disease = None
                                 if random.random() < 0.05:
                                     object.creature.mutate()
                                 object.next_value = 1
@@ -182,8 +183,8 @@ class Grid():
                             object.next_value = 0
                         object.food-=0.01*total
                         object.food +=0.1
-                        if object.food >1.0:
-                            object.food =1.0
+                        if object.food >object.food_max:
+                            object.food = object.food_max
     
     # Update living tiles
         for i in range(0,len(self.grid_array)):
@@ -211,23 +212,35 @@ class Grid():
                             total+=self.grid_array[i+1][j+1].value
                                                 
                         object.next_value = 1
-                        object.food-=1*(1-object.climate_coefficient)
-                        if not object.creature.is_carnivore and not object.creature.is_producer: # Check if the population migrates
+                        
+                        if not object.creature.is_producer: # Check if the population migrates
                                 if random.random()<object.creature.movement_ability:
-                                    self.move_creature(i,j)
+                                    if object.creature.is_carnivore: # Non carnivore upkeep
+                                        object.creature.food_store-=object.creature.metabolism
+                                        object.creature.food_store-=(1-object.climate_coefficient)
+                                        if object.creature.food_store<=0:
+                                            object.value = 0
+                                            object.next_value = 0
+                                            object.creature = None
+                                        else:
+                                            self.move_creature(i,j)
+                                    else:
+                                        self.move_creature(i,j)
                         
                         if object.creature != None: # Incase creature has moved
-                            # Disease logic
-                            if object.creature.disease != None:
+                            
+                            if object.creature.disease != None: # Disease logic
                                 pass
                             
                             if not object.creature.is_carnivore: # Non carnivore upkeep
                                 object.food-=object.creature.metabolism
                                 object.food-=0.025*total
                                 object.food-=0.5*object.creature.evade_chance
+                                object.food-=(1-object.climate_coefficient)
 
                             else: # Carnivore/predator code
                                 object.creature.food_store-=object.creature.metabolism
+                                object.creature.food_store-=(1-object.climate_coefficient)
                                 if object.creature.food_store<=0:
                                     object.value = 0
                                     object.next_value = 0
@@ -283,3 +296,4 @@ class Grid():
                 element.value = 0
                 element.next_value = 0
                 element.creature = None
+                
