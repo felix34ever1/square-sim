@@ -160,7 +160,7 @@ while playing:
             grid.update_tiles()
         if repopulation_ticks>10000:
             repopulation_ticks=0
-            grid.populate([255,255,255],0.1,False,False)
+            grid.populate([random.randint(0,255),random.randint(0,255),random.randint(0,255)],0.1,False,False)
         #if climate_ticks>5000:
         #    grid.do_climate_change(1)
         #    climate_ticks=0

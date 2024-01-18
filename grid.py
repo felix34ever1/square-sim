@@ -217,7 +217,20 @@ class Grid():
                                 nearby_neighbours = self.check_creature_neighbours(i,j)
                                 if len(nearby_neighbours)>0:
                                     victim_tile = nearby_neighbours[random.randint(0,len(nearby_neighbours)-1)]
-                                    victim_tile.creature.disease = copy.deepcopy(this_disease)
+                                    if victim_tile.creature.disease == None:
+                                        victim_tile.creature.disease = copy.deepcopy(this_disease)
+                                        if random.random()<0.05:
+                                            victim_tile.creature.disease.mutate()
+                                    elif victim_tile.creature.disease.deadly+victim_tile.creature.disease.leech<this_disease.deadly+this_disease.leech:
+                                        victim_tile.creature.disease = copy.deepcopy(this_disease)
+                                        if random.random()<0.05:
+                                            victim_tile.creature.disease.mutate()
+                                            
+                            if random.random()<this_disease.deadly:
+                                object.creature = None
+                                object.value = 0
+                                object.next_value = 0
+                                break
 
                         if not object.creature.is_producer: # Check if the population migrates
                                 if random.random()<object.creature.movement_ability:
@@ -228,6 +241,7 @@ class Grid():
                                             object.value = 0
                                             object.next_value = 0
                                             object.creature = None
+                                            break
                                         else:
                                             self.move_creature(i,j)
                                     else:
@@ -241,6 +255,8 @@ class Grid():
                                 object.food-=0.025*total
                                 object.food-=0.5*object.creature.evade_chance
                                 object.food-=(1-object.climate_coefficient)
+                                if object.creature.disease!= None:
+                                    object.food-=object.creature.disease.leech
 
                             else: # Carnivore/predator code
                                 object.creature.food_store-=object.creature.metabolism
