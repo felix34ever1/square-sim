@@ -7,7 +7,7 @@ import disease
 
 pygame.init()
 
-grid_size = (30,20)
+grid_size = (40,25)
 
 WINDOW = pygame.display.set_mode((32*grid_size[0]+200,32*grid_size[1]))
 
@@ -29,6 +29,7 @@ evade_text = default_font.render(f"Ev: ",False,WHITE)
 movement_text = default_font.render(f"Mov: ",False,WHITE)
 reasoning_text = default_font.render(f"Rea: ",False,WHITE)
 type_text = default_font.render(f"Prod: | Carn:",False,WHITE)
+disease_text = default_font.render(f"Deadly: | Leech:",False, WHITE)
 
 # HUD Images
 edit_on = pygame.image.load("edit_on.png")
@@ -145,6 +146,9 @@ while playing:
                     movement_text = default_font.render(f"Mov: {round(selected.movement_ability,2)}",False,WHITE)
                     reasoning_text = default_font.render(f"Rea: {round(selected.reasoning,2)}",False,WHITE)
                     type_text = default_font.render(f"Prod:{selected.is_producer} |Carn:{selected.is_carnivore}",False,WHITE)
+                    if selected.disease!=None:
+                        disease_text = default_font.render(f"Deadly: {round(selected.disease.deadly,2)}| Leech:{round(selected.disease.leech,2)}",False, WHITE)
+
     if simulating:
         WINDOW.blit(edit_off,edit_rect)
         ticks_passed = simulation_timer.tick()
@@ -167,6 +171,7 @@ while playing:
     WINDOW.blit(movement_text,(grid_size[0]*32+10, 480))
     WINDOW.blit(reasoning_text,(grid_size[0]*32+10, 520))
     WINDOW.blit(type_text,(grid_size[0]*32+10, 560))
+    WINDOW.blit(disease_text,(grid_size[0]*32+10,600))
         
         
 

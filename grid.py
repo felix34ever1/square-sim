@@ -3,6 +3,7 @@ import pygame
 import random
 import copy
 import creature
+import disease
 class Grid():
 
     def __init__(self,width:int,height:int,WINDOW:pygame.surface.Surface) -> None:
@@ -35,9 +36,6 @@ class Grid():
                     if new_cc<0:
                         new_cc = 0
                     self.grid_array[i][j].climate_coefficient=new_cc
-
-                
-
 
     def check_neighbours(self,grid_x:int,grid_y:int)->list[tile.Tile]:
         neighbour_list = []
@@ -213,6 +211,14 @@ class Grid():
                                                 
                         object.next_value = 1
                         
+                        if type(object.creature.disease) == disease.Disease: # Disease logic
+                            this_disease:disease.Disease = object.creature.disease
+                            if random.random()<this_disease.deadly+this_disease.leech:
+                                nearby_neighbours = self.check_creature_neighbours(i,j)
+                                if len(nearby_neighbours)>0:
+                                    victim_tile = nearby_neighbours[random.randint(0,len(nearby_neighbours)-1)]
+                                    victim_tile.creature.disease = copy.deepcopy(this_disease)
+
                         if not object.creature.is_producer: # Check if the population migrates
                                 if random.random()<object.creature.movement_ability:
                                     if object.creature.is_carnivore: # Non carnivore upkeep
@@ -229,8 +235,6 @@ class Grid():
                         
                         if object.creature != None: # Incase creature has moved
                             
-                            if object.creature.disease != None: # Disease logic
-                                pass
                             
                             if not object.creature.is_carnivore: # Non carnivore upkeep
                                 object.food-=object.creature.metabolism

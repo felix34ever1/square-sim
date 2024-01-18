@@ -1,8 +1,9 @@
 import random
+import disease
 
 class Creature():
 
-    def __init__(self,color:list[int],metabolism:float,is_producer:bool=False,is_carnivore:bool=False) -> None:
+    def __init__(self,color:list[int],metabolism:float,is_producer:bool=False,is_carnivore:bool=False,disease:disease.Disease=None) -> None:
         self.color = color
         self.metabolism = metabolism
         self.is_producer = is_producer
@@ -11,7 +12,7 @@ class Creature():
         self.food_store = 1.0
         self.movement_ability = 0.0
         self.reasoning = 0.0
-        self.disease = None
+        self.disease = disease
 
     def mutate(self):
         for i in range(3):
