@@ -3,6 +3,7 @@ import grid
 import tile
 import creature
 import random
+import disease
 
 pygame.init()
 
@@ -127,6 +128,8 @@ while playing:
                         if not current_tile.is_blocker:
                             current_tile.value = 1
                             current_tile.creature = creature.Creature(creature_color,creature_metabolism,creature_is_producer,creature_is_carnivore)
+                            current_tile.creature.disease = disease.Disease()
+                            current_tile.creature.disease.mutate()
             except:
                 print("clicked out of bounds")
         if pygame.mouse.get_pressed()[2]:# Get creature stats

@@ -11,6 +11,7 @@ class Creature():
         self.food_store = 1.0
         self.movement_ability = 0.0
         self.reasoning = 0.0
+        self.disease = None
 
     def mutate(self):
         for i in range(3):

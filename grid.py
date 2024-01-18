@@ -11,6 +11,7 @@ class Grid():
         self.WINDOW = WINDOW
         self.climate_change = 0
         self.grid_array:list[list] = []
+        
         for i in range(width):
             self.grid_array.append([])
             for j in range(height):
@@ -92,6 +93,9 @@ class Grid():
                         new_rect = pygame.rect.Rect(i*32+2,j*32+2,28,28)
                         creature_color = tuple(object.creature.color)
                         self.WINDOW.fill(creature_color,new_rect)
+                        if object.creature.disease != None:
+                            new_rect = pygame.rect.Rect(i*32+4,j*32+4,8,8)
+                            self.WINDOW.fill(object.creature.disease.color,new_rect)
                     elif object.value == 0 and object.is_blocker: # A blocker
                         new_rect = pygame.rect.Rect(i*32,j*32,32,32)
                         self.WINDOW.fill((100,100,100),new_rect)
@@ -211,11 +215,17 @@ class Grid():
                         if not object.creature.is_carnivore and not object.creature.is_producer: # Check if the population migrates
                                 if random.random()<object.creature.movement_ability:
                                     self.move_creature(i,j)
-                        if object.creature != None:
+                        
+                        if object.creature != None: # Incase creature has moved
+                            # Disease logic
+                            if object.creature.disease != None:
+                                pass
+                            
                             if not object.creature.is_carnivore: # Non carnivore upkeep
                                 object.food-=object.creature.metabolism
                                 object.food-=0.025*total
                                 object.food-=0.5*object.creature.evade_chance
+
                             else: # Carnivore/predator code
                                 object.creature.food_store-=object.creature.metabolism
                                 if object.creature.food_store<=0:
