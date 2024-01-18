@@ -6,12 +6,14 @@ import creature
 import disease
 class Grid():
 
-    def __init__(self,width:int,height:int,WINDOW:pygame.surface.Surface) -> None:
+    def __init__(self,width:int,height:int,WINDOW:pygame.surface.Surface,display_size:list[int]) -> None:
         self.width = width
         self.height = height
         self.WINDOW = WINDOW
         self.climate_change = 0
         self.grid_array:list[list] = []
+        self.display_size = display_size
+        self.displacement:list[int]=[0,0]
         
         for i in range(width):
             self.grid_array.append([])
@@ -22,6 +24,24 @@ class Grid():
                 if climate_coefficient<0:
                     climate_coefficient = 0
                 self.grid_array[i].append(tile.Tile(0,climate_coefficient))
+
+    def displace_view(self,axis:bool,direction:bool):
+        """for axis, 1/True = X axis, 0/False = Y axis. For direction, 1/True = positive direction, 0/False = negative direction"""
+        if axis == True: # X axis
+            if direction == True: # Positive (right)
+                if self.displacement[0]<self.width-self.display_size[0]:
+                    self.displacement[0]+=1
+            elif direction == False: # Negative (left)
+                if self.displacement[0]>0:
+                    self.displacement[0]-=1
+        if axis == False: # Y axis
+            if direction == True: # Positive (down)
+                if self.displacement[1]<self.height-self.display_size[1]:
+                    self.displacement[1]+=1
+            elif direction == False: # Negative (up)
+                if self.displacement[1]>0:
+                    self.displacement[1]-=1
+                
 
     def do_climate_change(self,increase_amount):
         self.climate_change+=increase_amount
@@ -75,9 +95,10 @@ class Grid():
         return empty_tile_list
 
     def display(self):
-        for i in range(0,len(self.grid_array)):
-            for j in range(0,len(self.grid_array[i])):
-                object = self.grid_array[i][j]
+        
+        for i in range(0,self.display_size[0]):
+            for j in range(0,self.display_size[1]):
+                object = self.grid_array[i+self.displacement[0]][j+self.displacement[1]]
                 if type(object)==tile.Tile:
                     
                     #new_rect.topleft = (i*32,j*32)
@@ -225,7 +246,7 @@ class Grid():
                                         victim_tile.creature.disease = copy.deepcopy(this_disease)
                                         if random.random()<0.05:
                                             victim_tile.creature.disease.mutate()
-                                            
+
                             if random.random()<this_disease.deadly:
                                 object.creature = None
                                 object.value = 0

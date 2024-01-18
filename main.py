@@ -7,11 +7,17 @@ import disease
 
 pygame.init()
 
-grid_size = (40,25)
+grid_size = (64,64)
+display_size = [grid_size[0],grid_size[1]]
+if grid_size[0]>30:
+    display_size[0]=30
+if grid_size[1]>20:
+    display_size[1]=20
 
-WINDOW = pygame.display.set_mode((32*grid_size[0]+200,32*grid_size[1]))
 
-grid = grid.Grid(grid_size[0],grid_size[1],WINDOW)
+WINDOW = pygame.display.set_mode((32*display_size[0]+200,32*display_size[1]))
+
+grid = grid.Grid(grid_size[0],grid_size[1],WINDOW,display_size)
 
 k = random.randint(1,4)
 n = random.randint(1,4)
@@ -23,7 +29,7 @@ default_font = pygame.font.Font("cnc.ttf",20)
 
 WHITE = (255,255,255)
 creature_display_color = [0,0,0]
-creature_display_rect = pygame.rect.Rect(grid_size[0]*32+84, 300,32,32)
+creature_display_rect = pygame.rect.Rect(display_size[0]*32+84, 300,32,32)
 metabolism_text = default_font.render(f"Me: ",False,WHITE)
 evade_text = default_font.render(f"Ev: ",False,WHITE)
 movement_text = default_font.render(f"Mov: ",False,WHITE)
@@ -35,13 +41,14 @@ disease_text = default_font.render(f"Deadly: | Leech:",False, WHITE)
 edit_on = pygame.image.load("edit_on.png")
 edit_off = pygame.image.load("edit_off.png")
 edit_rect = edit_on.get_rect()
-edit_rect.topleft = (32*grid_size[0]+84,32)
+edit_rect.topleft = (32*display_size[0]+84,32)
 
 
 playing = True
 editing = True
 simulating = False
 simulation_timer = pygame.time.Clock()
+movement_timer = pygame.time.Clock()
 creature_metabolism = 0.1
 creature_color = [255,255,255]
 creature_is_producer = False
@@ -50,6 +57,10 @@ placing_blocker = False
 simulation_ticks = 0
 repopulation_ticks = 0
 climate_ticks = 0 
+camera_ticks = 0
+movement_state = [0,0]
+moving_camera = False
+
 while playing:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -101,24 +112,56 @@ while playing:
 
             if event.key == pygame.K_c:
                 grid.clear()
-        
+            
+            if event.key == pygame.K_a:
+                movement_state = [1,0]
+                moving_camera = True
+
+            if event.key == pygame.K_d:
+                movement_state = [1,1]
+                moving_camera = True
+
+            if event.key == pygame.K_w:
+                movement_state = [0,0]
+                moving_camera = True
+
+            if event.key == pygame.K_s:
+                movement_state = [0,1]
+                moving_camera = True
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                movement_state = [1,0]
+                moving_camera = False
+
+            if event.key == pygame.K_d:
+                movement_state = [1,1]
+                moving_camera = False
+
+            if event.key == pygame.K_w:
+                movement_state = [0,0]
+                moving_camera = False
+
+            if event.key == pygame.K_s:
+                movement_state = [0,1]
+                moving_camera = False
+
 
     WINDOW.fill((0,0,0))
     grid.display()
 
-    for i in range(grid_size[0]):
-        pygame.draw.line(WINDOW,(0,0,0),[i*32,0],[i*32,grid_size[1]*32])
-        for j in range(grid_size[1]):
-            pygame.draw.line(WINDOW,(0,0,0),[0,j*32],[grid_size[0]*32,j*32])
+    for i in range(display_size[0]):
+        pygame.draw.line(WINDOW,(0,0,0),[i*32,0],[i*32,display_size[1]*32])
+        for j in range(display_size[1]):
+            pygame.draw.line(WINDOW,(0,0,0),[0,j*32],[display_size[0]*32,j*32])
             
-
     if editing:
         WINDOW.blit(edit_on,edit_rect)
         if pygame.mouse.get_pressed()[0]:# Place creature
             position = pygame.mouse.get_pos()
             grid_pos = (position[0]//32,position[1]//32)
             try:
-                current_tile = grid.grid_array[grid_pos[0]][grid_pos[1]]
+                current_tile = grid.grid_array[grid_pos[0]+grid.displacement[0]][grid_pos[1]+grid.displacement[1]]
                 if type(current_tile) == tile.Tile:
                     if placing_blocker: # Place blocker
                         current_tile.value = 0
@@ -136,7 +179,7 @@ while playing:
         if pygame.mouse.get_pressed()[2]:# Get creature stats
             position = pygame.mouse.get_pos()
             grid_pos = (position[0]//32,position[1]//32)
-            current_tile = grid.grid_array[grid_pos[0]][grid_pos[1]]
+            current_tile =  grid.grid_array[grid_pos[0]+grid.displacement[0]][grid_pos[1]+grid.displacement[1]]
             if type(current_tile) == tile.Tile:
                 if current_tile.creature != None:
                     selected = current_tile.creature
@@ -165,13 +208,20 @@ while playing:
         #    grid.do_climate_change(1)
         #    climate_ticks=0
 
+    camera_ticks += movement_timer.tick()
+    if camera_ticks>20:
+        if moving_camera:
+            grid.displace_view(movement_state[0],movement_state[1])
+            camera_ticks=0
+
+
     pygame.draw.rect(WINDOW,creature_display_color,creature_display_rect)
-    WINDOW.blit(metabolism_text,(grid_size[0]*32+10, 400))
-    WINDOW.blit(evade_text,(grid_size[0]*32+10, 440))
-    WINDOW.blit(movement_text,(grid_size[0]*32+10, 480))
-    WINDOW.blit(reasoning_text,(grid_size[0]*32+10, 520))
-    WINDOW.blit(type_text,(grid_size[0]*32+10, 560))
-    WINDOW.blit(disease_text,(grid_size[0]*32+10,600))
+    WINDOW.blit(metabolism_text,(display_size[0]*32+10, 400))
+    WINDOW.blit(evade_text,(display_size[0]*32+10, 440))
+    WINDOW.blit(movement_text,(display_size[0]*32+10, 480))
+    WINDOW.blit(reasoning_text,(display_size[0]*32+10, 520))
+    WINDOW.blit(type_text,(display_size[0]*32+10, 560))
+    WINDOW.blit(disease_text,(display_size[0]*32+10,600))
         
         
 
