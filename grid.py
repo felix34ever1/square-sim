@@ -331,6 +331,8 @@ class Grid():
                 if type(object)==tile.Tile:
                     object.value = object.next_value
 
+
+
     def clear(self):
         for row in self.grid_array:
             for element in row:

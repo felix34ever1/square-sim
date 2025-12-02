@@ -7,7 +7,7 @@ import disease
 
 pygame.init()
 
-grid_size = (64,64)
+grid_size = (20,20)
 display_size = [grid_size[0],grid_size[1]]
 if grid_size[0]>30:
     display_size[0]=30

@@ -1,6 +1,6 @@
 import creature
 
-class Tile:
+class Tile():
 
     def __init__(self,value=0,climate_coefficient = 1.0) -> None:
         self.value = value
